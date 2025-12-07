@@ -6,6 +6,10 @@ keep_vars = true
 [build]
 command = "cargo install -q worker-build && worker-build --release"
 
+[route]
+pattern = "vault.zetx.tech/*"
+zone_name = "zetx.tech"
+
 # Static assets configuration for serving frontend
 # Frontend files should be placed in ./public directory before deployment
 [assets]
