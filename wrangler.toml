@@ -30,7 +30,7 @@ run_worker_first = ["/api/*", "/identity/*"]
 crons = ["0 3 * * *"]
 
 [[d1_databases]]
-binding = "warden-db"
+binding = "warden_db"
 database_name = "warden-db"
 database_id = "${D1_DATABASE_ID}"
 migrations_dir = "migrations"
