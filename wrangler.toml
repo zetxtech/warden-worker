@@ -36,19 +36,5 @@ crons = ["0 3 * * *"]
 [[d1_databases]]
 binding = "vault1"
 database_name = "warden-db"
-database_id = "${D1_DATABASE_ID}"
-migrations_dir = "migrations"
-
-[env.dev]
-name = "warden-worker-dev"
-keep_vars = true
-
-# Dev environment also needs cron triggers
-[env.dev.triggers]
-crons = ["0 3 * * *"]
-
-[[env.dev.d1_databases]]
-binding = "vault1"
-database_name = "vault1-dev" 
-database_id = "${D1_DATABASE_ID_DEV}"
+database_id = "2b52c401-9029-4267-aa7e-32fedabeea16"
 migrations_dir = "migrations"
