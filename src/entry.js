@@ -158,6 +158,15 @@ export default {
     request = new Request(url.toString(), request);
     const method = (request.method || "GET").toUpperCase();
 
+    // HTTP-triggered cron: GET /_cron/{CRON_KEY}
+    if (method === "GET" && env.CRON_KEY && url.pathname === `/_cron/${env.CRON_KEY}`) {
+      const worker = new RustWorker(ctx, env);
+      await worker.scheduled({ scheduledTime: Date.now(), cron: "manual" });
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     // Optional: route selected CPU-heavy endpoints to Durable Objects.
     // This keeps the main Worker on a low-CPU path while allowing heavy work to complete.
     if (env.HEAVY_DO) {

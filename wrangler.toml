@@ -44,7 +44,7 @@ directory = "./public/web-vault"
 not_found_handling = "404-page"
 html_handling = "auto-trailing-slash"
 # Only invoke Worker for API and Identity routes, serve static files directly for other routes
-run_worker_first = ["/api/*", "/identity/*"]
+run_worker_first = ["/api/*", "/identity/*", "/_cron/*"]
 
 [vars]
 # Server-side password hashing PBKDF2 iterations (stored per-user).
@@ -75,6 +75,10 @@ run_worker_first = ["/api/*", "/identity/*"]
 # Defaults to no limit if not set.
 # ATTACHMENT_MAX_BYTES = "104857600"  # 100MB
 
+# Secret key for triggering scheduled tasks via HTTP: GET /_cron/{CRON_KEY}
+# If not set, the HTTP cron trigger endpoint is disabled.
+# CRON_KEY = "your-secret-key-here"
+
 # Maximum total attachment storage per user in KB.
 # Defaults to no limit if not set.
 # ATTACHMENT_TOTAL_LIMIT_KB = "1048576"  # 1GB
@@ -85,8 +89,8 @@ run_worker_first = ["/api/*", "/identity/*"]
 
 # Cron triggers for scheduled tasks
 # Runs daily at 03:00 UTC to purge soft-deleted ciphers
-[triggers]
-crons = ["0 3 * * *"]
+# [triggers]
+# crons = ["0 3 * * *"]
 
 [[d1_databases]]
 binding = "vault1"
@@ -98,12 +102,17 @@ migrations_dir = "migrations"
 # R2 has priority: if R2 is configured, KV is ignored.
 # R2 supports larger files and streaming uploads.
 # Uncomment and configure this section to enable file attachments via R2:
-# [[r2_buckets]]
-# binding = "ATTACHMENTS_BUCKET"
-# bucket_name = "warden-attachments"
+[[r2_buckets]]
+binding = "ATTACHMENTS_BUCKET"
+bucket_name = "warden"
 
 # KV namespace for file attachments (optional, no credit card required)
 # KV has a 25MB limit per file, but doesn't require credit card binding.
 # If R2 is not configured, KV will be used for attachments.
 [[kv_namespaces]]
 binding = "ATTACHMENTS_KV"
+
+[observability]
+[observability.logs]
+enabled = false
+invocation_logs = true
