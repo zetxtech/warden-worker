@@ -114,5 +114,5 @@ binding = "ATTACHMENTS_KV"
 
 [observability]
 [observability.logs]
-enabled = false
+enabled = true
 invocation_logs = true
