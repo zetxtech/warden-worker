@@ -1,4 +1,6 @@
-use axum::Extension;
+use std::sync::Arc;
+
+use axum::{extract::DefaultBodyLimit, Extension};
 use tower_http::cors::{Any, CorsLayer};
 use tower_service::Service;
 use worker::*;
@@ -6,6 +8,7 @@ use worker::*;
 mod auth;
 mod crypto;
 mod db;
+mod durable;
 mod error;
 mod handlers;
 mod models;
@@ -25,13 +28,15 @@ pub async fn main(
     console_error_panic_hook::set_once();
     let _ = console_log::init_with_level(log::Level::Debug);
 
-    // Extract base URL from request URI
-    let uri = req.uri();
+    // Extract base URL from the incoming request
+    let uri = req.uri().clone();
     let base_url = format!(
         "{}://{}",
         uri.scheme_str().unwrap_or("https"),
         uri.authority().map(|a| a.as_str()).unwrap_or("localhost")
     );
+
+    let env = Arc::new(env);
 
     // Allow all origins for CORS, which is typical for a public API like Bitwarden's.
     let cors = CorsLayer::new()
@@ -39,9 +44,14 @@ pub async fn main(
         .allow_headers(Any)
         .allow_origin(Any);
 
-    let mut app = router::api_router(env)
+    // Attachment uploads/downloads are handled in entry.js for zero-copy streaming,
+    // so we can use a conservative body limit here (5MB) for regular API requests.
+    const BODY_LIMIT: usize = 5 * 1024 * 1024;
+
+    let mut app = router::api_router((*env).clone())
         .layer(Extension(BaseUrl(base_url)))
-        .layer(cors);
+        .layer(cors)
+        .layer(DefaultBodyLimit::max(BODY_LIMIT));
 
     Ok(app.call(req).await?)
 }
@@ -56,6 +66,19 @@ pub async fn scheduled(_event: ScheduledEvent, env: Env, _ctx: ScheduleContext) 
     // Set up logging
     console_error_panic_hook::set_once();
     let _ = console_log::init_with_level(log::Level::Debug);
+
+    log::info!("Scheduled task triggered: purging stale pending attachments");
+    match handlers::purge::purge_stale_pending_attachments(&env).await {
+        Ok(count) => {
+            log::info!(
+                "Pending attachment purge completed: {} record(s) removed",
+                count
+            );
+        }
+        Err(e) => {
+            log::error!("Pending attachment purge failed: {:?}", e);
+        }
+    }
 
     log::info!("Scheduled task triggered: purging soft-deleted ciphers");
 

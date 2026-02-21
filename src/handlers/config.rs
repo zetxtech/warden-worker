@@ -31,7 +31,7 @@ pub async fn config(
     // feature_states.insert("unauth-ui-refresh".to_string(), true);
     // feature_states.insert("enable-pm-flight-recorder".to_string(), true);
     // feature_states.insert("mobile-error-reporting".to_string(), true);
-    
+
     let disable_user_registration = get_disable_user_registration(&env);
 
     Json(json!({
@@ -40,8 +40,9 @@ pub async fn config(
         // We should make sure that we keep this updated when we support the new server features
         // Version history:
         // - Individual cipher key encryption: 2024.2.0
-        "version": "2024.7.0",
-        "gitHash": "25cf6119-dirty",
+        // - Mobile app support for MasterPasswordUnlockData: 2025.8.0
+        "version": "2025.12.0",
+        "gitHash": "5d84f176",
         "server": {
           "name": "Vaultwarden",
           "url": "https://github.com/dani-garcia/vaultwarden"
@@ -53,8 +54,8 @@ pub async fn config(
           "vault": domain,
           "api": format!("{domain}/api"),
           "identity": format!("{domain}/identity"),
-          "notifications": format!("{domain}/notifications"),
-          "sso": format!("{domain}/sso"),
+          "notifications": format!(""),
+          "sso": format!(""),
           "cloudRegion": null,
         },
         // Bitwarden uses this for the self-hosted servers to indicate the default push technology

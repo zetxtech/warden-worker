@@ -1,5 +1,7 @@
-pub mod user;
-pub mod sync;
+pub mod attachment;
 pub mod cipher;
 pub mod folder;
 pub mod import;
+pub mod sync;
+pub mod twofactor;
+pub mod user;
